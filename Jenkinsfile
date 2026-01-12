@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         // Replace with your Docker Hub details
-        DOCKER_HUB_USER = "your_docker_username"
-        IMAGE_NAME      = "your_repo_name"
+        DOCKER_HUB_USER = "tarun142333"
+        IMAGE_NAME      = "my-jenkins-app"
         DOCKER_HUB_CREDS = 'dockerhub-creds' // The ID you gave your credentials in the Jenkins UI
     }
 
@@ -65,3 +65,5 @@ pipeline {
         }
     }
 }
+
+
