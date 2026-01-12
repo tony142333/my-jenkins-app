@@ -1,10 +1,10 @@
 terraform {
   # The Central Brain: Remote State in S3
   backend "s3" {
-    bucket         = "perma-memory"
-    key            = "terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
+    bucket  = "perma-memory"
+    key     = "terraform.tfstate"
+    region  = "us-east-1"
+    encrypt = true
   }
 
   required_providers {
