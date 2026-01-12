@@ -1,0 +1,5 @@
+.cache
+trivy.db
+metadata.json
+.git
+node_modules
