@@ -53,6 +53,13 @@ resource "aws_instance" "jenkins_server" {
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
   key_name               = "tejav"
 
+  # EXPANDED STORAGE: Adding 20GB to stop "No Space Left" errors
+  root_block_device {
+    volume_size           = 20
+    volume_type           = "gp3"
+    delete_on_termination = true
+  }
+
   user_data = <<-EOF
               #!/bin/bash
               sudo apt update -y
@@ -66,9 +73,15 @@ resource "aws_instance" "jenkins_server" {
               sudo usermod -aG docker ubuntu
               sudo systemctl enable --now docker
               sudo systemctl enable --now jenkins
+              # Restart Jenkins to ensure group permissions (docker) take effect
+              sudo systemctl restart jenkins
               EOF
 
   tags = {
     Name = "Jenkins-Automated-Server"
   }
+}
+
+output "jenkins_ip" {
+  value = aws_instance.jenkins_server.public_ip
 }
