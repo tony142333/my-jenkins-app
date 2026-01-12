@@ -38,3 +38,4 @@ jobs:
       # 6. Terraform Apply (The "Automatic" Part)
       - name: Terraform Apply
         run: terraform -chdir=terraform apply -auto-approve
+
