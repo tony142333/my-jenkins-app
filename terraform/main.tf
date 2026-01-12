@@ -1,5 +1,21 @@
 # main.tf
 
+terraform {
+  backend "s3" {
+    bucket         = "perma-memory" # <--- Your Bucket Name
+    key            = "terraform.tfstate"         # Name of the state file in S3
+    region         = "us-east-1"
+    encrypt        = true                        # Keeps your state data secure
+  }
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
 provider "aws" {
   region = "us-east-1" # Change as needed
 }
