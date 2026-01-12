@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Added this step to fix the 'terraform: command not found' error
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
       - name: Terraform Format Check
         run: terraform -chdir=terraform fmt -check
 
@@ -68,7 +73,7 @@ jobs:
             --query "Command.CommandId" --output text)
           
           # Wait a moment for command execution
-          sleep 10
+          sleep 15
           
           aws ssm get-command-invocation \
             --command-id "$COMMAND_ID" \
