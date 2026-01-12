@@ -39,3 +39,5 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=["sudo cat /var/lib/jenkins/secrets/initialAdminPassword"]' \
             --query "Command.CommandId" --output text
+          
+          
