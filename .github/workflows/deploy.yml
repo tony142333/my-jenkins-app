@@ -1,43 +1,41 @@
 name: "01-Infrastructure-Deploy"
-
 on:
   push:
     branches: [ main ]
 
-permissions:
-  contents: read
-
 jobs:
-  Validation:
-    name: "Check Configuration"
+  Provisioning:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Terraform Init (Check Only)
-        run: echo "Syntax check passed."
-
-  Provisioning:
-    name: "AWS Infrastructure Build"
-    needs: Validation
-    runs-on: ubuntu-latest
-    env:
-      TF_LOG: INFO # This helps us see exactly where S3 fails if it happens again
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
+      - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Terraform Init
-        run: terraform -chdir=terraform init -reconfigure
-
+      - uses: hashicorp/setup-terraform@v3
       - name: Terraform Apply
-        run: terraform -chdir=terraform apply -auto-approve
+        run: |
+          terraform -chdir=terraform init
+          terraform -chdir=terraform apply -auto-approve
+
+      - name: Attach IAM & Get Password
+        run: |
+          # 1. Get Instance ID
+          INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=Jenkins-Automated-Server" "Name=instance-state-name,Values=running" --query "Reservations[0].Instances[0].InstanceId" --output text)
+          
+          # 2. Attach the IAM Profile (Since it's not in main.tf)
+          aws ec2 associate-iam-instance-profile --instance-id $INSTANCE_ID --iam-instance-profile Name=jenkins-profile-automated || echo "Already attached"
+          
+          # 3. Wait for Jenkins installation to finish
+          echo "Waiting for Jenkins setup..."
+          sleep 120 
+          
+          # 4. Fetch Password via SSM
+          aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=["sudo cat /var/lib/jenkins/secrets/initialAdminPassword"]' \
+            --query "Command.CommandId" --output text
